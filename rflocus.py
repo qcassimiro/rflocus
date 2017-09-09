@@ -11,14 +11,18 @@ import flask
 import flask_cors
 import flask_restful
 
+
 class RFLocus(flask_restful.Resource):
     def __init__(self):
         """ init shit """
         pass
+
     def get(self):
         return {}
+
     def put(self):
         return {}
+
 
 def get_args():
     parser = argparse.ArgumentParser(description="Descricao curta do programa")
@@ -39,7 +43,9 @@ def get_args():
     if args['port'] < 1000 or args['port'] > 8000:
         # logar erro de valor
         args = None
+    args['machine'] = os.uname().machine
     return args
+
 
 def main():
     args = get_args()
@@ -51,6 +57,7 @@ def main():
     api.add_resource(RFLocus, '/')
     app.run(debug=True)
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())
