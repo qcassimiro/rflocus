@@ -43,6 +43,7 @@ def setup_arguments():
                         default=5000,
                         metavar="[5000-5500]",
                         help="Ajuda da opcao")
+    # - parse args into a dict
     args = vars(parser.parse_args())
     # - add system arguments
     #   - running on raspberry?
