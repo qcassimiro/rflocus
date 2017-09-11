@@ -4,6 +4,7 @@ import argparse
 import json
 import logging
 import os
+import platform
 import sqlite3
 import sys
 import yaml
@@ -18,7 +19,6 @@ import flask_restful
 class RFLocus(flask_restful.Resource):
 
     def __init__(self):
-        """ init shit """
         pass
 
     def get(self):
@@ -28,7 +28,7 @@ class RFLocus(flask_restful.Resource):
         return {}
 
 
-def get_args():
+def setup_arguments():
     parser = argparse.ArgumentParser(description='''
         Descricao curta do programa
         ''')
@@ -44,16 +44,18 @@ def get_args():
                         metavar="[5000-5500]",
                         help="Ajuda da opcao")
     args = vars(parser.parse_args())
-    # verificar e/ou adicionar argumentos
-    print(args)
+    # - add system arguments
+    #   - running on raspberry?
+    args['machine'] = platform.machine()
+    args['plaform'] = platform.platform()
+    # - check arguments
     if args['port'] < 5000 or args['port'] > 5500:
-        # logar erro de valor
+        print("Out of bounds")
         args = None
-    args['plaform'] = sys.platform
     return args
 
 
-def set_logging(config_path='logging.yaml', level=logging.INFO):
+def setup_logging(config_path='logging.yaml', level=logging.INFO):
     if os.path.exists(config_path):
         with open(config_path, 'rt') as f:
             config = yaml.safe_load(f.read())
@@ -63,14 +65,15 @@ def set_logging(config_path='logging.yaml', level=logging.INFO):
 
 
 def main():
-    args = get_args()
+    args = setup_arguments()
     if not args:
         return 1
-    set_logging()
-    logging.info('Main porra')
+    setup_logging()
+    logging.info("Starting RFLocus server...")
     app = flask.Flask(__name__)
     flask_cors.CORS(app)
     api = flask_restful.Api(app)
+    logging.info("RFLocus resource URI is '/'")
     api.add_resource(RFLocus, '/')
     app.run(debug=True)
     return 0
