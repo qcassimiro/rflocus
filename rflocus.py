@@ -49,10 +49,12 @@ def setup_arguments():
     #   - running on raspberry?
     args['machine'] = platform.machine()
     args['plaform'] = platform.platform()
-    # - check arguments
+    # - check arguments (elif chain preferred for flow consistency)
     if args['port'] < 5000 or args['port'] > 5500:
         print("Out of bounds")
         args = None
+    else:
+        pass
     return args
 
 
