@@ -74,7 +74,7 @@ def main():
     setup_logging()
     logging.info("Starting RFLocus server...")
     app = flask.Flask(__name__)
-    flask_cors.CORS(app)
+    flask_cors.CORS(app, resources={r"/*": {"origins": "*"}})
     api = flask_restful.Api(app)
     logging.info("RFLocus resource URI is '/'")
     api.add_resource(RFLocus, '/')
