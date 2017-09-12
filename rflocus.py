@@ -5,9 +5,9 @@ import json
 import logging
 import os
 import platform
+import pprint
 import sqlite3
 import sys
-import yaml
 
 import logging.config
 
@@ -15,17 +15,29 @@ import flask
 import flask_cors
 import flask_restful
 
+import config
+
 
 class RFLocus(flask_restful.Resource):
 
     def __init__(self):
-        pass
+        self.conn = sqlite3.connect(config.DATABASE)
+        self.curs = self.conn.cursor()
+        # logging.debug(pprint.pformat(args))
 
     def get(self):
+        logging.debug(flask.request.query_string)
+        a = flask.request.args.get('a')
+        logging.debug('a is {} of type {}'.format(a, type(a)))
+        b = flask.request.args.get('b')
+        logging.debug('b is {} of type {}'.format(b, type(b)))
         return {}
 
     def put(self):
         return {}
+
+    def __del__(self):
+        self.conn.close()
 
 
 def setup_arguments():
@@ -40,28 +52,31 @@ def setup_arguments():
                         "--port",
                         action='store',
                         type=int,
-                        default=5000,
-                        metavar="[5000-5500]",
+                        default=config.PORT_DEFAULT,
+                        metavar=config.PORT_METAVAR,
                         help="Ajuda da opcao")
-    # - parse args into a dict
-    args = vars(parser.parse_args())
-    # - add system arguments
-    #   - running on raspberry?
+    args = vars(parser.parse_args())  # 'dictfy' arguments
+    # additional arguments
+    args['host'] = '0.0.0.0'  # TODO: add to command line
+    args['debug'] = True  # TODO: add to command line
+    args['system'] = platform.system()
     args['machine'] = platform.machine()
     args['plaform'] = platform.platform()
-    # - check arguments (elif chain preferred for flow consistency)
-    if args['port'] < 5000 or args['port'] > 5500:
-        print("Out of bounds")
+    args['processor'] = platform.processor()
+    # validate arguments
+    if args['port'] not in config.PORT_RANGE:
+        print("Invalid port number ({}).".format(args['port']))
+        parser.print_help()
         args = None
     else:
         pass
     return args
 
 
-def setup_logging(config_path='logging.yaml', level=logging.INFO):
+def setup_logging(config_path=config.LOGCONF, level=logging.INFO):
     if os.path.exists(config_path):
         with open(config_path, 'rt') as f:
-            config = yaml.safe_load(f.read())
+            config = json.load(f)
         logging.config.dictConfig(config)
     else:
         logging.basicConfig(level=level)
@@ -72,13 +87,13 @@ def main():
     if not args:
         return 1
     setup_logging()
-    logging.info("Starting RFLocus server...")
+    logging.info("Starting RFLocus server")
     app = flask.Flask(__name__)
     flask_cors.CORS(app, resources={r"/*": {"origins": "*"}})
     api = flask_restful.Api(app)
-    logging.info("RFLocus resource URI is '/'")
-    api.add_resource(RFLocus, '/')
-    app.run(debug=True)
+    logging.info("RFLocus resource URI is {}".format(config.RFLOCUS_URI))
+    api.add_resource(RFLocus, config.RFLOCUS_URI)
+    app.run(host=args['host'], port=args['port'], debug=args['debug'])
     return 0
 
 
