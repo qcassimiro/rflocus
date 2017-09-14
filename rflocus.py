@@ -70,6 +70,7 @@ def setup_arguments():
     else:
         pass
     if error:
+        print()
         print(error)
         print()
         parser.print_help()
