@@ -122,7 +122,6 @@ def main():
     except:
         logging.exception("Database not ready.")
         return 1
-    '''
     logging.info("Starting RFLocus server")
     app = flask.Flask(__name__)
     flask_cors.CORS(app, resources={r"/*": {"origins": "*"}})
@@ -130,7 +129,6 @@ def main():
     logging.info("RFLocus resource URI is {}".format(config.RFLOCUS_URI))
     api.add_resource(RFLocus, config.RFLOCUS_URI)
     app.run(host=args['host'], port=args['port'], debug=args['debug'])
-    '''
     return 0
 
 
