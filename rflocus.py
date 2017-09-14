@@ -87,6 +87,7 @@ def setup_logging(config_path=config.LOGCONF, level=logging.INFO):
 
 
 def setup_database(db_path=config.DATABASE):
+    # WRONG LOGIC !!!!!
     conn = sqlite3.connect(db_path)
     curs = conn.cursor()
     curs.execute(config.EXISTS_ARXY)

@@ -71,14 +71,26 @@ INSERT INTO `calc` (`apid`, `posx`, `posy`)
 VALUES (?, ?, ?);
 '''
 ISEMPTY_REAL = '''
-SELECT COUNT(*) from `real`;
+SELECT COUNT(*) FROM `real`;
 '''
 ISEMPTY_CALC = '''
-SELECT COUNT(*) from `calc`;
+SELECT COUNT(*) FROM `calc`;
 '''
 ISEMPTY_ARXY = '''
-SELECT COUNT(*) from `arxy`;
+SELECT COUNT(*) FROM `arxy`;
 '''
 ISEMPTY_APXY = '''
-SELECT COUNT(*) from `apxy`;
+SELECT COUNT(*) FROM `apxy`;
+'''
+EMPTY_REAL = '''
+DELETE FROM `real`;
+'''
+EMPTY_CALC = '''
+DELETE FROM `calc`;
+'''
+EMPTY_ARXY = '''
+DELETE FROM `arxy`;
+'''
+EMPTY_APXY = '''
+DELETE FROM `apxy`;
 '''
