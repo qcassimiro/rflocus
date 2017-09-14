@@ -23,7 +23,6 @@ class RFLocus(flask_restful.Resource):
     def __init__(self):
         self.conn = sqlite3.connect(config.DATABASE)
         self.curs = self.conn.cursor()
-        # logging.debug(pprint.pformat(args))
 
     def get(self):
         logging.debug(flask.request.query_string)
@@ -65,7 +64,7 @@ def setup_arguments():
     # validate arguments
     error = None
     if args['port'] not in config.PORT_RANGE:
-        error = "Invalid port number: {}".format(args['port'])
+        error = "Invalid port number: {}.".format(args['port'])
         args = None
     else:
         pass
@@ -86,21 +85,28 @@ def setup_logging(config_path=config.LOGCONF, level=logging.INFO):
         logging.basicConfig(level=level)
 
 
-def setup_database(db_path=config.DATABASE):
-    # WRONG LOGIC !!!!!
+def check_database(db_path=config.DATABASE):
     conn = sqlite3.connect(db_path)
     curs = conn.cursor()
     curs.execute(config.EXISTS_ARXY)
-    nareas = len(curs.fetchall())
+    if not curs.fetchall():
+        message = "Table of areas not found."
+        raise Exception(message)  # TODO: raise custom exception
+    curs.execute(config.ISEMPTY_ARXY)
+    nareas = curs.fetchone()[0]
     if nareas not in config.NAREAS_RANGE:
         conn.close()
-        message = "Incompatible number of areas detected: {}".format(nareas)
+        message = "Incompatible number of areas detected: {}.".format(nareas)
         raise Exception(message)  # TODO: raise custom exception
     curs.execute(config.EXISTS_APXY)
-    naps = len(curs.fetchall())
+    if not curs.fetchall():
+        message = "Table of access points not found."
+        raise Exception(message)  # TODO: raise custom exception
+    curs.execute(config.ISEMPTY_APXY)
+    naps = curs.fetchone()[0]
     if naps not in config.NAPS_RANGE:
         conn.close()
-        message = "Incompatible number of access points detected: {}".format(naps)
+        message = "Incompatible number of access points detected: {}.".format(naps)
         raise Exception(message)  # TODO: raise custom exception
     curs.execute(config.EXISTS_REAL)
     if not len(curs.fetchall()):
@@ -119,9 +125,9 @@ def main():
         return 1
     setup_logging()
     try:
-        setup_database()
+        check_database()
     except:
-        logging.exception("Database not ready.")
+        logging.exception("Database not ready. Run 'setupdb' first.")
         return 1
     logging.info("Starting RFLocus server")
     app = flask.Flask(__name__)

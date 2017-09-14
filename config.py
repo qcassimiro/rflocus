@@ -1,5 +1,5 @@
 NAPS_RANGE = range(3, 10)
-NAREAS_RANGE = range(1, 10)
+NAREAS_RANGE = range(2, 10)
 LOGCONF = "logging.json"
 PORT_DEFAULT = 5500
 PORT_METAVAR = "[5000-6000]"
