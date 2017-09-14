@@ -11,9 +11,8 @@ CREATE TABLE IF NOT EXISTS `real` (
     `rssi`  INTEGER NOT NULL,
     `posx`  INTEGER NOT NULL,
     `posy`  INTEGER NOT NULL,
-    `time`  TEXT UNIQUE,
-    PRIMARY KEY(`reid`)
-);
+    `time`  TEXT NOT NULL UNIQUE,
+    PRIMARY KEY(`reid`));
 '''
 CREATE_CALC = '''
 CREATE TABLE IF NOT EXISTS `calc` (
@@ -22,9 +21,8 @@ CREATE TABLE IF NOT EXISTS `calc` (
     `rssi`  INTEGER NOT NULL,
     `posx`  INTEGER NOT NULL,
     `posy`  INTEGER NOT NULL,
-    `time`  TEXT UNIQUE,
-    PRIMARY KEY(`caid`)
-);
+    `time`  TEXT NOT NULL UNIQUE,
+    PRIMARY KEY(`caid`));
 '''
 CREATE_ARXY = '''
 CREATE TABLE IF NOT EXISTS `arxy` (
@@ -33,14 +31,52 @@ CREATE TABLE IF NOT EXISTS `arxy` (
     `miny`  INTEGER NOT NULL,
     `maxx`  INTEGER NOT NULL,
     `maxy`  INTEGER NOT NULL,
-    PRIMARY KEY(`arid`)
-);
+    PRIMARY KEY(`arid`));
 '''
 CREATE_APXY = '''
 CREATE TABLE IF NOT EXISTS `apxy` (
     `apid`  TEXT NOT NULL UNIQUE,
     `posx`  INTEGER NOT NULL,
     `posy`  INTEGER NOT NULL,
-    PRIMARY KEY(`apid`)
-);
+    PRIMARY KEY(`apid`));
+'''
+EXISTS_REAL = '''
+SELECT name FROM sqlite_master WHERE type='table' AND name='real';
+'''
+EXISTS_CALC = '''
+SELECT name FROM sqlite_master WHERE type='table' AND name='calc';
+'''
+EXISTS_ARXY = '''
+SELECT name FROM sqlite_master WHERE type='table' AND name='arxy';
+'''
+EXISTS_APXY = '''
+SELECT name FROM sqlite_master WHERE type='table' AND name='apxy';
+'''
+INSERT_REAL = '''
+INSERT INTO `real` (`apid`, `rssi`, `posx`, `posy`, `time`)
+VALUES (?, ?, ?, ?, ?);
+'''
+INSERT_CALC = '''
+INSERT INTO `calc` (`apid`, `rssi`, `posx`, `posy`, `time`)
+VALUES (?, ?, ?, ?, ?);
+'''
+INSERT_ARXY = '''
+INSERT INTO `calc` (`arid`, `minx`, `miny`, `maxx`, `maxy`)
+VALUES (?, ?, ?, ?, ?);
+'''
+INSERT_APXY = '''
+INSERT INTO `calc` (`apid`, `posx`, `posy`)
+VALUES (?, ?, ?);
+'''
+ISEMPTY_REAL = '''
+SELECT COUNT(*) from `real`;
+'''
+ISEMPTY_CALC = '''
+SELECT COUNT(*) from `calc`;
+'''
+ISEMPTY_ARXY = '''
+SELECT COUNT(*) from `arxy`;
+'''
+ISEMPTY_APXY = '''
+SELECT COUNT(*) from `apxy`;
 '''

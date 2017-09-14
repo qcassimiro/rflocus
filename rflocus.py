@@ -73,7 +73,7 @@ def setup_arguments():
     return args
 
 
-def setup_logging(config_path=config.LOGCONF, level=logging.INFO):
+def setup_logging(config_path=config.LOGCONF, level=logging.INFO):  # raise exception
     if os.path.exists(config_path):
         with open(config_path, 'rt') as f:
             config = json.load(f)
@@ -82,11 +82,22 @@ def setup_logging(config_path=config.LOGCONF, level=logging.INFO):
         logging.basicConfig(level=level)
 
 
+def setup_database(db_path=config.DATABASE):  # raise exception
+    if os.path.exists(db_path):
+        conn = sqlite3.connect(db_path)
+        curs = conn.cursor()
+        arxy = curs.execute(config.ARXY)
+        apxy = curs.execute(config.APXY)
+        print(arxy)
+        print(apxy)
+
+
 def main():
-    args = setup_arguments()
+    args = setup_arguments()  # change to raise exception
     if not args:
         return 1
     setup_logging()
+    setup_database()
     logging.info("Starting RFLocus server")
     app = flask.Flask(__name__)
     flask_cors.CORS(app, resources={r"/*": {"origins": "*"}})
