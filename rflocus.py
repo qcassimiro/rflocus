@@ -56,7 +56,6 @@ def setup_arguments():
                         metavar=config.PORT_METAVAR,
                         help="Ajuda da opcao")
     args = vars(parser.parse_args())  # 'dictfy' arguments
-    # additional arguments
     args['host'] = '0.0.0.0'  # TODO: add to command line
     args['debug'] = True  # TODO: add to command line
     args['system'] = platform.system()
@@ -64,16 +63,20 @@ def setup_arguments():
     args['plaform'] = platform.platform()
     args['processor'] = platform.processor()
     # validate arguments
+    error = None
     if args['port'] not in config.PORT_RANGE:
-        print("Invalid port number ({}).".format(args['port']))
-        parser.print_help()
+        error = "Invalid port number: {}".format(args['port'])
         args = None
     else:
         pass
+    if error:
+        print(error)
+        print()
+        parser.print_help()
     return args
 
 
-def setup_logging(config_path=config.LOGCONF, level=logging.INFO):  # raise exception
+def setup_logging(config_path=config.LOGCONF, level=logging.INFO):
     if os.path.exists(config_path):
         with open(config_path, 'rt') as f:
             config = json.load(f)
@@ -82,22 +85,43 @@ def setup_logging(config_path=config.LOGCONF, level=logging.INFO):  # raise exce
         logging.basicConfig(level=level)
 
 
-def setup_database(db_path=config.DATABASE):  # raise exception
-    if os.path.exists(db_path):
-        conn = sqlite3.connect(db_path)
-        curs = conn.cursor()
-        arxy = curs.execute(config.ARXY)
-        apxy = curs.execute(config.APXY)
-        print(arxy)
-        print(apxy)
+def setup_database(db_path=config.DATABASE):
+    conn = sqlite3.connect(db_path)
+    curs = conn.cursor()
+    curs.execute(config.EXISTS_ARXY)
+    nareas = len(curs.fetchall())
+    if nareas not in config.NAREAS_RANGE:
+        conn.close()
+        message = "Incompatible number of areas detected: {}".format(nareas)
+        raise Exception(message)  # TODO: raise custom exception
+    curs.execute(config.EXISTS_APXY)
+    naps = len(curs.fetchall())
+    if naps not in config.NAPS_RANGE:
+        conn.close()
+        message = "Incompatible number of access points detected: {}".format(naps)
+        raise Exception(message)  # TODO: raise custom exception
+    curs.execute(config.EXISTS_REAL)
+    if not len(curs.fetchall()):
+        curs.execute(config.CREATE_REAL)
+        logging.warn("Table of measured values table didn't exist and was created.")
+    curs.execute(config.EXISTS_CALC)
+    if not len(curs.fetchall()):
+        curs.execute(config.CREATE_CALC)
+        logging.warn("Table of calculated values table didn't exist and was created.")
+    conn.close()
 
 
 def main():
-    args = setup_arguments()  # change to raise exception
+    args = setup_arguments()
     if not args:
         return 1
     setup_logging()
-    setup_database()
+    try:
+        setup_database()
+    except:
+        logging.exception("RFLocus wasn't able to set the database.")
+        return 1
+    '''
     logging.info("Starting RFLocus server")
     app = flask.Flask(__name__)
     flask_cors.CORS(app, resources={r"/*": {"origins": "*"}})
@@ -105,6 +129,7 @@ def main():
     logging.info("RFLocus resource URI is {}".format(config.RFLOCUS_URI))
     api.add_resource(RFLocus, config.RFLOCUS_URI)
     app.run(host=args['host'], port=args['port'], debug=args['debug'])
+    '''
     return 0
 
 
