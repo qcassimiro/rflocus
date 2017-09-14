@@ -120,7 +120,7 @@ def main():
     try:
         setup_database()
     except:
-        logging.exception("RFLocus wasn't able to set the database.")
+        logging.exception("Database not ready.")
         return 1
     '''
     logging.info("Starting RFLocus server")
