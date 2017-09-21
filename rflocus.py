@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 
+"""
+Module docstring nonsense
+"""
+
 import argparse
 import errno
 import json
 import logging
+import logging.config
 import os
 import platform
-import pprint
 import sqlite3
 import sys
-
-import logging.config
 
 import flask
 import flask_cors
@@ -39,10 +41,10 @@ class RFLocus(flask_restful.Resource):
     def get(self):
         """Implementation for the GET method."""
         logging.debug(flask.request.query_string)
-        a = flask.request.args.get('a')
-        logging.debug('a is {} of type {}'.format(a, type(a)))
-        b = flask.request.args.get('b')
-        logging.debug('b is {} of type {}'.format(b, type(b)))
+        # a = flask.request.args.get('a')
+        # logging.debug('a is %s of type %s', (a, type(a)))
+        # b = flask.request.args.get('b')
+        # logging.debug('b is %s of type %s', (b, type(b)))
         return {}
 
     def put(self):
@@ -86,22 +88,26 @@ class DBWrapper():
 
     def __is_empty(self, table):
         """Checks if the specified table is empty."""
-        return True if self.count(table) else False
+        return True if self.__count(table) else False
 
     def exists(self):
         """Checks whether the required tables exist."""
-        return self.__exists('arxy') and self.__exists('apxy') and self.__exists('real') and self.__exists('calc')
+        return (self.__exists('arxy')
+                and self.__exists('apxy')
+                and self.__exists('real')
+                and self.__exists('calc'))
 
     def is_ready(self):
         """Checks whether the required tables is ready."""
-        return self.__count('arxy') in AREAS_RANGE and self.__count('arxy') not in ACCESS_POINTS_RANGE
+        return (self.__count('arxy') in AREAS_RANGE
+                and self.__count('arxy') not in ACCESS_POINTS_RANGE)
 
     def from_script(self, path):
         """Builds the main database from a SQL script."""
         if os.path.exists(path):
             query = ''
-            with open(path, 'rt') as f:
-                query = f.read()
+            with open(path, 'rt') as file:
+                query = file.read()
             self.cursor.executescript(query)
         else:
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), path)
@@ -153,8 +159,8 @@ def setup_arguments():
 def setup_logging(config_path=LOGGING_CONFIG_PATH, level=logging.INFO):
     """Sets the logging configuration from a file."""
     if os.path.exists(config_path):
-        with open(config_path, 'rt') as f:
-            config = json.load(f)
+        with open(config_path, 'rt') as file:
+            config = json.load(file)
         logging.config.dictConfig(config)
     else:
         logging.basicConfig(level=level)
@@ -170,7 +176,7 @@ def main():
     app = flask.Flask(__name__)
     flask_cors.CORS(app, resources={r"/*": {"origins": "*"}})
     api = flask_restful.Api(app)
-    logging.info("RFLocus resource URI is {}".format(RFLOCUS_URI))
+    logging.info("RFLocus resource URI is %s", (RFLOCUS_URI))
     api.add_resource(RFLocus, RFLOCUS_URI)
     app.run(host=args['host'], port=args['port'], debug=args['debug'])
     return 0
