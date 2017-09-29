@@ -40,14 +40,49 @@ class RFLocus(flask_restful.Resource):
 
     def get(self):
         """Implementation for the GET method."""
-        logging.debug(flask.request.query_string)
-        # a = flask.request.args.get('a')
-        # logging.debug('a is %s of type %s', (a, type(a)))
-        # b = flask.request.args.get('b')
-        # logging.debug('b is %s of type %s', (b, type(b)))
-        return {}
+        #
+        # IMPLEMENTAR ESSA PORCARIA DIREITO
+        #
+        # RSSI: http://127.0.0.1:5500/?type=rssi&618afa4d8e89=67&303c711fdf32=47&2cd83a4ecde3=47
+        # DIST: http://127.0.0.1:5500/?type=dist&618afa4d8e89=8.48&303c711fdf32=4.47&2cd83a4ecde3=4.47
+        #
+        logging.debug(flask.request)
+        self.database.cursor.execute("SELECT * FROM `apxy`")
+        aps = self.database.cursor.fetchall()
+        circles = []
+        for ap in aps:
+            if flask.request.args.get(ap[0]):
+                circle = {}
+                circle['x'] = ap[1]
+                circle['y'] = ap[2]
+                if flask.request.args.get('type') == "dist":
+                    circle['r'] = float(flask.request.args.get(ap[0]))
+                elif flask.request.args.get('type') == "rssi":
+                    circle['r'] = (float(flask.request.args.get(ap[0])) - 25) / 5
+                else:
+                    circle['r'] = 1
+                circles.append(circle)
+        x = 0
+        y = 0
+        if len(circles) == 3:
+            d1 = circles[0]['r']
+            d2 = circles[1]['r']
+            d3 = circles[2]['r']
+            x1 = circles[0]['x']
+            x2 = circles[1]['x']
+            x3 = circles[2]['x']
+            y1 = circles[0]['y']
+            y2 = circles[1]['y']
+            y3 = circles[2]['y']
+            x = (((d1 ** 2 - d2 ** 2) + (x2 ** 2 - x1 ** 2) + (y2 ** 2 - y1 ** 2)) * (2 * y3 - 2 * y2) - ((d2 ** 2 - d3 ** 2) + (x3 ** 2 - x2 ** 2) + (y3 ** 2 - y2 ** 2)) * (2 * y2 - 2 * y1)) / ((2 * x2 - 2 * x3) * (2 * y2 - 2 * y1) - (2 * x1 - 2 * x2) * (2 * y3 - 2 * y2))
+            y = ((d1 ** 2 - d2 ** 2) + (x2 ** 2 - x1 ** 2) + (y2 ** 2 - y1 ** 2) + x * (2 * x1 - 2 * x2)) / (2 * y2 - 2 * y1)
+        self.database.cursor.execute("SELECT `arid` FROM `arxy` WHERE `minx` < {} and `maxx` > {} and `miny` < {} and `maxy` > {}".format(x, x, y, y))
+        a = self.database.cursor.fetchone()
+        a = a[0] if a else ""
+        return {'x': x, 'y': y, 'a': a}
 
     def put(self):
+        logging.debug(flask.request.query_string)
         """Implementation for the PUT method."""
         return {}
 
@@ -60,9 +95,6 @@ class DBWrapper():
         """Implementation for the __init__ method.
 
         Prepares main database"""
-        self.__conn = None
-        if not path:
-            raise ValueError("Path to database not specified.")
         if not os.path.exists(path):
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), path)
         self.__conn = sqlite3.connect(path)
@@ -80,7 +112,7 @@ class DBWrapper():
         return True if self.cursor.fetchall() else False
 
     def __count(self, table):
-        """Returns the number of rows in thespecified table."""
+        """Returns the number of rows in the specified table."""
         table = ''.join(c for c in table if c.isalnum())  # make query safe
         query = "SELECT COUNT(*) FROM " + table + ";"
         self.cursor.execute(query)
@@ -100,7 +132,7 @@ class DBWrapper():
     def is_ready(self):
         """Checks whether the required tables is ready."""
         return (self.__count('arxy') in AREAS_RANGE
-                and self.__count('arxy') not in ACCESS_POINTS_RANGE)
+                and self.__count('apxy') in ACCESS_POINTS_RANGE)
 
     def from_script(self, path):
         """Builds the main database from a SQL script."""
