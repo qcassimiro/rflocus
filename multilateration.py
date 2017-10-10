@@ -15,16 +15,16 @@ def errors(position, references, distances):
     return errsum
 
 
-def main():
-    real = [-2.0, -2.0]
-    references = [[-4.0, 2.0], [4.0, 4.0], [2.0, -4.0], [0, 0]]
-    distances = [4.47, 8.48, 4.47, 2.8]
-    res = scipy.optimize.minimize(errors,
-                                  [0, 0],
-                                  args=(references, distances),
-                                  method='powell')
-    estimate = res.x
-    print(estimate)
+def estimate(references, distances):
+    start = [0 for _ in range(len(references[0]))]
+    result = scipy.optimize.minimize(errors,
+                                     start,
+                                     args=(references, distances),
+                                     method='powell')
+    return result.x
+
 
 if __name__ == '__main__':
-    main()
+    references = [[-4.0, 2.0], [4.0, 4.0], [2.0, -4.0], [0, 0]]
+    distances = [4.47, 8.48, 4.47, 2.8]
+    print(estimate(references, distances))
