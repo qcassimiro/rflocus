@@ -21,7 +21,7 @@ def estimate(references, distances):
                                      start,
                                      args=(references, distances),
                                      method='powell')
-    return result.x
+    return tuple(result.x)
 
 
 if __name__ == '__main__':

@@ -30,13 +30,13 @@ DATABASE_PATH = "rflocus.db"
 DATABASE_SCRIPT_PATH = "rflocus.sql"
 
 
-class RFLocus(flask_restful.Resource):
+class RFLResource(flask_restful.Resource):
 
     """REST Resource class."""
 
     def __init__(self):
         """Implementation for the __init__ method."""
-        self.database = DBWrapper(DATABASE_PATH)
+        self.database = RFLDatabase(DATABASE_PATH)
 
     def get(self):
         """Implementation for the GET method."""
@@ -47,39 +47,31 @@ class RFLocus(flask_restful.Resource):
         # DIST: http://127.0.0.1:5500/?type=dist&618afa4d8e89=8.48&303c711fdf32=4.47&2cd83a4ecde3=4.47
         #
         logging.debug(flask.request)
-        self.database.cursor.execute("SELECT * FROM `apxy`")
-        aps = self.database.cursor.fetchall()
-        circles = []
-        for ap in aps:
-            if flask.request.args.get(ap[0]):
-                circle = {}
-                circle['x'] = ap[1]
-                circle['y'] = ap[2]
-                if flask.request.args.get('type') == "dist":
-                    circle['r'] = float(flask.request.args.get(ap[0]))
-                elif flask.request.args.get('type') == "rssi":
-                    circle['r'] = (float(flask.request.args.get(ap[0])) - 25) / 5
-                else:
-                    circle['r'] = 1
-                circles.append(circle)
-        x = 0
-        y = 0
-        if len(circles) == 3:
-            d1 = circles[0]['r']
-            d2 = circles[1]['r']
-            d3 = circles[2]['r']
-            x1 = circles[0]['x']
-            x2 = circles[1]['x']
-            x3 = circles[2]['x']
-            y1 = circles[0]['y']
-            y2 = circles[1]['y']
-            y3 = circles[2]['y']
-            x = (((d1 ** 2 - d2 ** 2) + (x2 ** 2 - x1 ** 2) + (y2 ** 2 - y1 ** 2)) * (2 * y3 - 2 * y2) - ((d2 ** 2 - d3 ** 2) + (x3 ** 2 - x2 ** 2) + (y3 ** 2 - y2 ** 2)) * (2 * y2 - 2 * y1)) / ((2 * x2 - 2 * x3) * (2 * y2 - 2 * y1) - (2 * x1 - 2 * x2) * (2 * y3 - 2 * y2))
-            y = ((d1 ** 2 - d2 ** 2) + (x2 ** 2 - x1 ** 2) + (y2 ** 2 - y1 ** 2) + x * (2 * x1 - 2 * x2)) / (2 * y2 - 2 * y1)
-        self.database.cursor.execute("SELECT `arid` FROM `arxy` WHERE `minx` < {} and `maxx` > {} and `miny` < {} and `maxy` > {}".format(x, x, y, y))
-        a = self.database.cursor.fetchone()
-        a = a[0] if a else ""
-        return {'x': x, 'y': y, 'a': a}
+        args = dict(flask.request.args)
+        req_type = args.pop('type', None)[0]
+        req_aps = {k: float(v[0]) for k, v in args.items()}
+        # rssi to distance
+        aps = {}
+        if 'rssi' in req_type:
+            for k, v in req_type.items():
+                aps[k] = v / 2  # estimate distance for rssi of v
+        else:
+            aps = req_aps
+        #
+        refs = self.database.get_references(tuple(aps.keys()))
+        references = []
+        distances = []
+        for ref in refs:
+            distances.append(aps[ref[0]])
+            references.append([ref[1], ref[2]])
+        print(distances)
+        print(references)
+        # estimate position
+        #
+        position = (2, -2)
+        area = self.database.get_area(position)
+        print(area)
+        return {'x': position[0], 'y': position[1], 'a': area}
 
     def put(self):
         logging.debug(flask.request.query_string)
@@ -87,7 +79,7 @@ class RFLocus(flask_restful.Resource):
         return {}
 
 
-class DBWrapper():
+class RFLDatabase():
 
     """Wrapper class for the main database."""
 
@@ -98,49 +90,49 @@ class DBWrapper():
         if not os.path.exists(path):
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), path)
         self.__conn = sqlite3.connect(path)
-        self.cursor = self.__conn.cursor()
-        if not self.exists():
-            self.from_script(DATABASE_SCRIPT_PATH)
-        if not self.is_ready():
+        self.__curs = self.__conn.cursor()
+        if not self.__built():
+            self.__from_script(DATABASE_SCRIPT_PATH)
+        if not self.__is_ready():
             raise RuntimeError("Database not ready.")
 
     def __exists(self, table):
         """Checks whether the specified table exists."""
         table = ''.join(c for c in table if c.isalnum())  # make query safe
         query = "SELECT name FROM sqlite_master WHERE type='table' AND name='" + table + "';"
-        self.cursor.execute(query)
-        return True if self.cursor.fetchall() else False
+        self.__curs.execute(query)
+        return True if self.__curs.fetchall() else False
 
     def __count(self, table):
         """Returns the number of rows in the specified table."""
         table = ''.join(c for c in table if c.isalnum())  # make query safe
-        query = "SELECT COUNT(*) FROM " + table + ";"
-        self.cursor.execute(query)
-        return self.cursor.fetchone()[0]
+        query = "SELECT COUNT(*) FROM `" + table + "`;"
+        self.__curs.execute(query)
+        return self.__curs.fetchone()[0]
 
     def __is_empty(self, table):
         """Checks if the specified table is empty."""
         return True if self.__count(table) else False
 
-    def exists(self):
+    def __built(self):
         """Checks whether the required tables exist."""
         return (self.__exists('arxy')
                 and self.__exists('apxy')
                 and self.__exists('real')
                 and self.__exists('calc'))
 
-    def is_ready(self):
+    def __is_ready(self):
         """Checks whether the required tables is ready."""
         return (self.__count('arxy') in AREAS_RANGE
                 and self.__count('apxy') in ACCESS_POINTS_RANGE)
 
-    def from_script(self, path):
+    def __from_script(self, path):
         """Builds the main database from a SQL script."""
         if os.path.exists(path):
             query = ''
             with open(path, 'rt') as file:
                 query = file.read()
-            self.cursor.executescript(query)
+            self.__curs.executescript(query)
         else:
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), path)
 
@@ -148,6 +140,21 @@ class DBWrapper():
         """Implementation for the __del__ method."""
         self.__conn.commit()
         self.__conn.close()
+
+    def get_references(self, apids):
+        apids = str(tuple([''.join(c for c in apid if c.isalnum()) for apid in apids]))  # make query safe
+        query = "SELECT * FROM `apxy` WHERE `apid` IN " + apids + ";"
+        self.__curs.execute(query)
+        return self.__curs.fetchall()
+
+    def get_area(self, posxy):
+        x = posxy[0]
+        y = posxy[1]
+        if type(x) is not int or type(y) is not int:
+            return None
+        query = "SELECT `arid` FROM `arxy` WHERE `minx` < {} and `maxx` > {} and `miny` < {} and `maxy` > {}".format(x, x, y, y)
+        self.__curs.execute(query)
+        return self.__curs.fetchone()[0]
 
 
 def setup_arguments():
@@ -201,15 +208,13 @@ def setup_logging(config_path=LOGGING_CONFIG_PATH, level=logging.INFO):
 def main():
     """Implementation for the 'main' function."""
     args = setup_arguments()
-    if not args:
-        return 1
     setup_logging()
     logging.info("Starting RFLocus server")
     app = flask.Flask(__name__)
     flask_cors.CORS(app, resources={r"/*": {"origins": "*"}})
     api = flask_restful.Api(app)
     logging.info("RFLocus resource URI is %s", (RFLOCUS_URI))
-    api.add_resource(RFLocus, RFLOCUS_URI)
+    api.add_resource(RFLResource, RFLOCUS_URI)
     app.run(host=args['host'], port=args['port'], debug=args['debug'])
     return 0
 
