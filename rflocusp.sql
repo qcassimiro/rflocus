@@ -17,7 +17,6 @@ VALUES
     0,
     4
 ),
-VALUES
 (
     "pn",
     0,
@@ -27,7 +26,6 @@ VALUES
     0,
     4
 ),
-VALUES
 (
     "nn",
     -8,
@@ -37,7 +35,6 @@ VALUES
     0,
     4
 ),
-VALUES
 (
     "np",
     -8,
@@ -62,21 +59,18 @@ VALUES
     4,
     2
 ),
-VALUES
 (
     "df11bb8fa87a",
     4,
     -4,
     2
 ),
-VALUES
 (
     "19b38286066e",
     -4,
     -4,
     2
 ),
-VALUES
 (
     "c745505106d1",
     -4,
