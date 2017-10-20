@@ -27,7 +27,8 @@ PORT_METAVAR = "[5000-6000]"
 PORT_RANGE = range(5000, 6000)
 RFLOCUS_URI = "/"
 DATABASE_PATH = "rflocus.db"
-DATABASE_SCRIPT_PATH = "rflocus.sql"
+DATABASE_BUILD_PATH = "rflocusb.sql"
+DATABASE_POPULATE_PATH = "rflocusp.sql"
 
 
 class RFLResource(flask_restful.Resource):
@@ -40,12 +41,6 @@ class RFLResource(flask_restful.Resource):
 
     def get(self):
         """Implementation for the GET method."""
-        #
-        # IMPLEMENTAR ESSA PORCARIA DIREITO
-        #
-        # RSSI: http://127.0.0.1:5500/?type=rssi&618afa4d8e89=67&303c711fdf32=47&2cd83a4ecde3=47
-        # DIST: http://127.0.0.1:5500/?type=dist&618afa4d8e89=8.48&303c711fdf32=4.47&2cd83a4ecde3=4.47
-        #
         logging.debug(flask.request)
         args = dict(flask.request.args)
         req_type = args.pop('type', None)[0]
@@ -63,15 +58,15 @@ class RFLResource(flask_restful.Resource):
         distances = []
         for ref in refs:
             distances.append(aps[ref[0]])
-            references.append([ref[1], ref[2]])
+            references.append([ref[1], ref[2], ref[3]])
         print(distances)
         print(references)
         # estimate position
         #
-        position = (2, -2)
+        position = (2, -2, 1)
         area = self.database.get_area(position)
         print(area)
-        return {'x': position[0], 'y': position[1], 'a': area}
+        return {'posx': position[0], 'posy': position[1], 'posz': position[2], 'arid': area}
 
     def put(self):
         logging.debug(flask.request.query_string)
@@ -85,27 +80,27 @@ class RFLDatabase():
 
     def __init__(self, path=None):
         """Implementation for the __init__ method.
-
         Prepares main database"""
         if not os.path.exists(path):
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), path)
         self.__conn = sqlite3.connect(path)
         self.__curs = self.__conn.cursor()
         if not self.__built():
-            self.__from_script(DATABASE_SCRIPT_PATH)
+            self.__from_script(DATABASE_BUILD_PATH)
         if not self.__is_ready():
-            raise RuntimeError("Database not ready.")
+            # raise RuntimeError("Database not ready.")
+            self.__from_script(DATABASE_POPULATE_PATH)
 
     def __exists(self, table):
         """Checks whether the specified table exists."""
-        table = ''.join(c for c in table if c.isalnum())  # make query safe
+        table = ''.join(c for c in table if c.isalnum())
         query = "SELECT name FROM sqlite_master WHERE type='table' AND name='" + table + "';"
         self.__curs.execute(query)
         return True if self.__curs.fetchall() else False
 
     def __count(self, table):
         """Returns the number of rows in the specified table."""
-        table = ''.join(c for c in table if c.isalnum())  # make query safe
+        table = ''.join(c for c in table if c.isalnum())
         query = "SELECT COUNT(*) FROM `" + table + "`;"
         self.__curs.execute(query)
         return self.__curs.fetchone()[0]
@@ -116,15 +111,15 @@ class RFLDatabase():
 
     def __built(self):
         """Checks whether the required tables exist."""
-        return (self.__exists('arxy')
-                and self.__exists('apxy')
+        return (self.__exists('arxyz')
+                and self.__exists('apxyz')
                 and self.__exists('real')
                 and self.__exists('calc'))
 
     def __is_ready(self):
         """Checks whether the required tables is ready."""
-        return (self.__count('arxy') in AREAS_RANGE
-                and self.__count('apxy') in ACCESS_POINTS_RANGE)
+        return (self.__count('arxyz') in AREAS_RANGE
+                and self.__count('apxyz') in ACCESS_POINTS_RANGE)
 
     def __from_script(self, path):
         """Builds the main database from a SQL script."""
@@ -142,17 +137,18 @@ class RFLDatabase():
         self.__conn.close()
 
     def get_references(self, apids):
-        apids = str(tuple([''.join(c for c in apid if c.isalnum()) for apid in apids]))  # make query safe
-        query = "SELECT * FROM `apxy` WHERE `apid` IN " + apids + ";"
+        apids = str(tuple([''.join(c for c in apid if c.isalnum()) for apid in apids]))
+        query = "SELECT * FROM `apxyz` WHERE `apid` IN " + apids + ";"
         self.__curs.execute(query)
         return self.__curs.fetchall()
 
-    def get_area(self, posxy):
-        x = posxy[0]
-        y = posxy[1]
-        if type(x) is not int or type(y) is not int:
+    def get_area(self, posxyz):
+        x = posxyz[0]
+        y = posxyz[1]
+        z = posxyz[2]
+        if type(x) is not int or type(y) is not int or type(z) is not int:
             return None
-        query = "SELECT `arid` FROM `arxy` WHERE `minx` < {} and `maxx` > {} and `miny` < {} and `maxy` > {}".format(x, x, y, y)
+        query = "SELECT `arid` FROM `arxyz` WHERE `minx` < {} and `maxx` > {} and `miny` < {} and `maxy` > {} and `minz` < {} and `maxz` > {}".format(x, x, y, y, z, z)
         self.__curs.execute(query)
         return self.__curs.fetchone()[0]
 

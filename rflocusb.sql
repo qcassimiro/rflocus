@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS `real`
     `rssi` INTEGER NOT NULL,
     `posx` INTEGER NOT NULL,
     `posy` INTEGER NOT NULL,
+    `posz` INTEGER NOT NULL,
     `time` TEXT    NOT NULL UNIQUE
 );
 
@@ -14,20 +15,24 @@ CREATE TABLE IF NOT EXISTS `calc` (
     `rssi` INTEGER NOT NULL,
     `posx` INTEGER NOT NULL,
     `posy` INTEGER NOT NULL,
+    `posz` INTEGER NOT NULL,
     `time` TEXT    NOT NULL UNIQUE
 );
 
-CREATE TABLE IF NOT EXISTS `arxy` (
+CREATE TABLE IF NOT EXISTS `arxyz` (
     `arid` TEXT    NOT NULL PRIMARY KEY UNIQUE,
     `minx` INTEGER NOT NULL,
     `miny` INTEGER NOT NULL,
+    `minz` INTEGER NOT NULL,
     `maxx` INTEGER NOT NULL,
-    `maxy` INTEGER NOT NULL
+    `maxy` INTEGER NOT NULL,
+    `maxz` INTEGER NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS `apxy`
+CREATE TABLE IF NOT EXISTS `apxyz`
 (
     `apid` TEXT    NOT NULL PRIMARY KEY UNIQUE,
     `posx` INTEGER NOT NULL,
-    `posy` INTEGER NOT NULL
+    `posy` INTEGER NOT NULL,
+    `posz` INTEGER NOT NULL
 );

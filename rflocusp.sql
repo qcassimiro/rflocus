@@ -1,0 +1,85 @@
+INSERT INTO `arxyz` (
+    `arid`,
+    `minx`,
+    `maxx`,
+    `miny`,
+    `maxy`,
+    `minz`,
+    `maxz`
+)
+VALUES
+(
+    "pp",
+    0,
+    8,
+    0,
+    8,
+    0,
+    4
+),
+VALUES
+(
+    "pn",
+    0,
+    8,
+    -8,
+    0,
+    0,
+    4
+),
+VALUES
+(
+    "nn",
+    -8,
+    0,
+    -8,
+    0,
+    0,
+    4
+),
+VALUES
+(
+    "np",
+    -8,
+    0,
+    0,
+    8,
+    0,
+    4
+);
+
+CREATE TABLE IF NOT EXISTS `apxyz`
+(
+    `apid`,
+    `posx`,
+    `posy`,
+    `posz`
+)
+VALUES
+(
+    "6a39a367518e",
+    4,
+    4,
+    2
+),
+VALUES
+(
+    "df11bb8fa87a",
+    4,
+    -4,
+    2
+),
+VALUES
+(
+    "19b38286066e",
+    -4,
+    -4,
+    2
+),
+VALUES
+(
+    "c745505106d1",
+    -4,
+    4,
+    2
+);
