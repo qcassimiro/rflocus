@@ -82,7 +82,8 @@ class RFLDatabase():
         """Implementation for the __init__ method.
         Prepares main database"""
         if not os.path.exists(path):
-            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), path)
+            # raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), path)
+            open(path, 'w').close()
         self.__conn = sqlite3.connect(path)
         self.__curs = self.__conn.cursor()
         if not self.__built():

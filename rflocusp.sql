@@ -45,7 +45,7 @@ VALUES
     4
 );
 
-CREATE TABLE IF NOT EXISTS `apxyz`
+INSERT INTO `apxyz`
 (
     `apid`,
     `posx`,
