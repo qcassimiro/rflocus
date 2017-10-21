@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-import pprint
 
 import scipy.optimize
 import scipy.spatial.distance

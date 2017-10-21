@@ -18,6 +18,8 @@ import flask
 import flask_cors
 import flask_restful
 
+import multilateration
+
 
 ACCESS_POINTS_RANGE = range(3, 10)
 AREAS_RANGE = range(2, 10)
@@ -43,7 +45,11 @@ class RFLResource(flask_restful.Resource):
         """Implementation for the GET method."""
         logging.debug(flask.request)
         args = dict(flask.request.args)
+        if not args:
+            return {}
         req_type = args.pop('type', None)[0]
+        if not args:
+            return {}
         req_aps = {k: float(v[0]) for k, v in args.items()}
         # rssi to distance
         aps = {}
@@ -61,15 +67,13 @@ class RFLResource(flask_restful.Resource):
             references.append([ref[1], ref[2], ref[3]])
         print(distances)
         print(references)
-        # estimate position
-        #
-        position = (2, -2, 1)
+        position = multilateration.estimate(references, distances)
         area = self.database.get_area(position)
         print(area)
         return {'posx': position[0], 'posy': position[1], 'posz': position[2], 'arid': area}
 
     def put(self):
-        logging.debug(flask.request.query_string)
+        logging.debug(flask.request)
         """Implementation for the PUT method."""
         return {}
 
