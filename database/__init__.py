@@ -5,7 +5,6 @@ import errno
 import os
 import sqlite3
 
-
 PATH = "rflocus.db"
 SCHEMA = "database/schema.sql"
 STDATA = "database/stdata.sql"
@@ -28,7 +27,7 @@ class RFLDatabase():
         self.connection.close()
 
     def has_table(self, table):
-        query = "SELECT name FROM sqlite_master WHERE type='table' AND name='" + table + "';"
+        query = "SELECT name FROM sqlite_master WHERE type='table' AND name='{}'".format(table)
         self.cursor.execute(query)
         return True if self.cursor.fetchall() else False
 
@@ -68,3 +67,11 @@ class RFLDatabase():
         self.cursor.execute(query)
         result = self.cursor.fetchone()
         return result[0] if result else None
+
+    def put_record(self, table, record):
+        query = '''INSERT INTO `{}` (`apid`, `rssi`, `posx`, `posy`, `posz`, `time`) VALUES
+        ('{}', {}, {}, {}, {}, '{}')'''.format(table, record['apid'], record['rssi'], record['posx'],
+                                           record['posy'], record['posz'], record['time'])
+        self.cursor.execute(query)
+        result = self.cursor.fetchone()
+        return result if result else None

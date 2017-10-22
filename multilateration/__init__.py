@@ -5,10 +5,13 @@ import scipy.optimize
 import scipy.spatial.distance
 
 
+euclidean = scipy.spatial.distance.euclidean
+
+
 def errors(position, references, distances):
     errsum = 0
     for i, reference in enumerate(references):
-        distance = scipy.spatial.distance.euclidean(position, reference)
+        distance = euclidean(position, reference)
         error = distance - distances[i]
         errsum += error * error
     return errsum
