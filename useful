@@ -6,3 +6,12 @@ https://nodemcu.readthedocs.io/en/dev/en/modules/wifi/
 http://127.0.0.1:5500/?6a39a367518e=3.00&df11bb8fa87a=6.40&19b38286066e=11.70&c745505106d1=10.25
 
 curl -H "Content-Type: application/json" -X PUT -d '{6a39a367518e":{"rssi":"4.58","posx":"6","posy":"2","posz":"1"}}' http://127.0.0.1:5500/
+
+
+
+curl -H "Content-Type: application/json" -X PUT -d '{"type": "ctrl", "data": [{"rfid": "A", "apid": "B", "rssi": -50, "time": 300}, {"rfid": "A", "apid": "B", "rssi": -30, "time": 500}, {"rfid": "A", "apid": "B", "rssi": -40, "time": 200}]}' http://127.0.0.1:5500/
+
+curl -H "Content-Type: application/json" -X PUT -d '{"type": "real", "data": [{"apid": "B", "rssi": -50, "posx": 3, "posy": 2, "posz": 1, "time": 300}, {"apid": "B", "rssi": -50, "posx": 3, "posy": 2, "posz": 1, "time": 300}, {"apid": "B", "rssi": -50, "posx": 3, "posy": 2, "posz": 1, "time": 300}, {"apid": "B", "rssi": -50, "posx": 3, "posy": 2, "posz": 1, "time": 300}]}' http://127.0.0.1:5500/
+
+curl -X GET http://127.0.0.1:5500/?6a:39:a3:67:51:8e=3.0&df:11:bb:8f:a8:7a=6.4&19:b3:82:86:06:6e=8.5&c7:45:50:51:06:d1=6.4
+

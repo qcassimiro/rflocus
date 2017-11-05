@@ -27,7 +27,8 @@ class RFLDatabase():
         self.connection.close()
 
     def has_table(self, table):
-        query = "SELECT name FROM sqlite_master WHERE type='table' AND name='{}'".format(table)
+        query = "SELECT name FROM sqlite_master WHERE type='table' AND name='{}'".format(
+            table)
         self.cursor.execute(query)
         return True if self.cursor.fetchall() else False
 
@@ -35,7 +36,8 @@ class RFLDatabase():
         return (self.has_table('arxyz') and
                 self.has_table('apxyz') and
                 self.has_table('real') and
-                self.has_table('calc'))
+                self.has_table('calc') and
+                self.has_table('ctrl'))
 
     def count(self, table):
         query = "SELECT COUNT(*) FROM `" + table + "`;"
@@ -51,10 +53,11 @@ class RFLDatabase():
                 query = f.read()
                 self.cursor.executescript(query)
         else:
-            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), script)
+            raise FileNotFoundError(
+                errno.ENOENT, os.strerror(errno.ENOENT), script)
 
     def get_references(self, apids):
-        query = "SELECT * FROM `apxyz` WHERE `apid` IN " + str(apids) + ";"
+        query = "SELECT * FROM `apxyz` WHERE `apid` IN " + tuple(str(apids)) + ";"
         self.cursor.execute(query)
         result = self.cursor.fetchall()
         return result
@@ -68,10 +71,26 @@ class RFLDatabase():
         result = self.cursor.fetchone()
         return result[0] if result else None
 
-    def put_record(self, table, record):
-        query = '''INSERT INTO `{}` (`apid`, `rssi`, `posx`, `posy`, `posz`, `time`) VALUES
-        ('{}', {}, {}, {}, {}, '{}')'''.format(table, record['apid'], record['rssi'], record['posx'],
-                                           record['posy'], record['posz'], record['time'])
+    def put_real(self, record):
+        query = '''INSERT INTO `real` (`apid`, `rssi`, `posx`, `posy`, `posz`, `time`) VALUES
+        ('{}', {}, {}, {}, {}, '{}')'''.format(record['apid'], record['rssi'], record['posx'],
+                                               record['posy'], record['posz'], record['time'])
+        self.cursor.execute(query)
+        result = self.cursor.fetchone()
+        return result if result else None
+
+    def put_calc(self, record):
+        query = '''INSERT INTO `calc` (`apid`, `rssi`, `posx`, `posy`, `posz`, `time`) VALUES
+        ('{}', {}, {}, {}, {}, '{}')'''.format(record['apid'], record['rssi'], record['posx'],
+                                               record['posy'], record['posz'], record['time'])
+        self.cursor.execute(query)
+        result = self.cursor.fetchone()
+        return result if result else None
+
+    def put_ctrl(self, record):
+        query = '''INSERT INTO `ctrl` (`rfid`, `apid`, `rssi`, `time`) VALUES
+        ('{}', '{}', {}, '{}')'''.format(record['rfid'], record['apid'],
+                                         record['rssi'], record['time'])
         self.cursor.execute(query)
         result = self.cursor.fetchone()
         return result if result else None

@@ -6,6 +6,7 @@ import scipy.spatial.distance
 
 
 euclidean = scipy.spatial.distance.euclidean
+minimize = scipy.optimize.minimize
 
 
 def errors(position, references, distances):
@@ -19,14 +20,15 @@ def errors(position, references, distances):
 
 def estimate(references, distances):
     start = [0 for _ in range(len(references[0]))]
-    result = scipy.optimize.minimize(errors,
-                                     start,
-                                     args=(references, distances),
-                                     method='powell')
+    result = minimize(errors,
+                      start,
+                      args=(references, distances),
+                      method='powell')
     return tuple(result.x)
 
 
 if __name__ == '__main__':
+    # change to unittest
     references = [[-4.0, 2.0], [4.0, 4.0], [2.0, -4.0], [0, 0]]
     distances = [4.47, 8.48, 4.47, 2.8]
     print(estimate(references, distances))

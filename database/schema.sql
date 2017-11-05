@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS `real`
     `posx` INTEGER NOT NULL,
     `posy` INTEGER NOT NULL,
     `posz` INTEGER NOT NULL,
-    `time` TEXT    NOT NULL UNIQUE
+    `time` TEXT    NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS `calc` (
@@ -16,7 +16,15 @@ CREATE TABLE IF NOT EXISTS `calc` (
     `posx` INTEGER NOT NULL,
     `posy` INTEGER NOT NULL,
     `posz` INTEGER NOT NULL,
-    `time` TEXT    NOT NULL UNIQUE
+    `time` TEXT    NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS `ctrl` (
+    `ctid` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+    `rfid` TEXT    NOT NULL,
+    `apid` TEXT    NOT NULL,
+    `rssi` INTEGER NOT NULL,
+    `time` TEXT    NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS `arxyz` (

@@ -11,27 +11,27 @@ import database
 import log
 import multilateration
 
-
-HOST = "0.0.0.0"
+HOST = "192.168.100.107"
 PORT = 5500
-DEBUG = True
+DEBUG = False
 RFLOCUS_URI = "/"
 
 
 class RFLResource(flask_restful.Resource):
-
     def __init__(self):
         self.database = database.RFLDatabase()
 
     def get(self):
+        now = datetime.datetime.now()
         log.debug(flask.request)
         args = dict(flask.request.args)
         if not args:
             return {}
         access_points = {}
         for k, v in args.items():
-            access_points[k] = float(v[0]) * 1.0  # estimate distance for rssi of v
-        results = self.database.get_references(tuple(access_points.keys()))
+            # estimate distance for rssi of v
+            access_points[k] = float(v[0]) * 1.0
+        results = self.database.get_references(access_points.keys())
         references = []
         distances = []
         for result in results:
@@ -39,29 +39,47 @@ class RFLResource(flask_restful.Resource):
             references.append([result[1], result[2], result[3]])
         position = multilateration.estimate(references, distances)
         for apid in access_points.keys():
-            record = {}
-            record['apid'] = apid
-            record['rssi'] = access_points[apid]
-            record['posx'] = position[0]
-            record['posy'] = position[1]
-            record['posz'] = position[2]
-            record['time'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
-            self.database.put_record('calc', record)
+            record = {
+                'apid': apid,
+                'rssi': access_points[apid],
+                'posx': position[0],
+                'posy': position[1],
+                'posz': position[2],
+                'time': now.strftime("%Y-%m-%d %H:%M:%S")
+            }
+            self.database.put_calc(record)
         area = self.database.get_area(position)
         return {'posx': position[0], 'posy': position[1], 'posz': position[2], 'arid': area}
 
     def put(self):
-        access_points = flask.request.get_json(force=True)
+        now = datetime.datetime.now()
+        request = flask.request.get_json(force=True)
+        request_type = request.pop('type', 'none')
+        measurements = request.pop('data', [])
         success = True
-        for apid in access_points.keys():
-            record = {}
-            record['apid'] = apid
-            record['rssi'] = access_points[apid]['rssi']
-            record['posx'] = access_points[apid]['posx']
-            record['posy'] = access_points[apid]['posy']
-            record['posz'] = access_points[apid]['posz']
-            record['time'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
-            self.database.put_record('real', record)
+        if request_type in 'real':
+            for measurement in measurements:
+                record = {
+                    'apid': measurement['apid'],
+                    'rssi': measurement['rssi'],
+                    'posx': measurement['posx'],
+                    'posy': measurement['posy'],
+                    'posz': measurement['posz'],
+                    'time': now.strftime("%Y-%m-%d %H:%M:%S")
+                }
+                self.database.put_real(record)
+        elif request_type in 'ctrl':
+            for measurement in measurements:
+                timestamp = now - datetime.timedelta(seconds=int(measurement['time']))
+                record = {
+                    'rfid': measurement['rfid'],
+                    'apid': measurement['apid'],
+                    'rssi': measurement['rssi'],
+                    'time': timestamp.strftime("%Y-%m-%d %H:%M:%S")
+                }
+                self.database.put_ctrl(record)
+        else:
+            success = False
         return {'success': success}
 
 
