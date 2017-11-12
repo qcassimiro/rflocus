@@ -57,7 +57,7 @@ class RFLDatabase():
                 errno.ENOENT, os.strerror(errno.ENOENT), script)
 
     def get_references(self, apids):
-        query = "SELECT * FROM `apxyz` WHERE `apid` IN " + tuple(str(apids)) + ";"
+        query = "SELECT * FROM `apxyz` WHERE `apid` IN " + str(tuple(apids)) + ";"
         self.cursor.execute(query)
         result = self.cursor.fetchall()
         return result

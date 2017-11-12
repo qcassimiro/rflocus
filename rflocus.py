@@ -11,7 +11,7 @@ import database
 import log
 import multilateration
 
-HOST = "192.168.100.107"
+HOST = "0.0.0.0"
 PORT = 5500
 DEBUG = False
 RFLOCUS_URI = "/"
