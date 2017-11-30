@@ -50,13 +50,13 @@ STA_CFG.pwd = "oficina3"
 
 --STA_CFG.pwd = "6305372450"
 
-STA_CFG.auto = true
-
 STA_CFG.bssid = "B8-27-EB-A3-7D-75"
 
 --STA_CFG.bssid = "90-17-AC-E7-3A-A0"
 
 --STA_CFG.bssid = "6C-B5-6B-8B-4D-90"
+
+STA_CFG.auto = true
 
 STA_CFG.save = false
 
@@ -90,7 +90,7 @@ MEASUREMENTS.data = {}
 
 tmr.unregister(1)
 
-tmr.alarm(1, 15000, tmr.ALARM_AUTO, function()
+tmr.alarm(1, 10000, tmr.ALARM_AUTO, function()
 
         for key, value in pairs(MEASUREMENTS.data) do
 
@@ -220,7 +220,7 @@ wifi.eventmon.unregister(wifi.eventmon.AP_PROBEREQRECVED)
 
 wifi.eventmon.register(wifi.eventmon.AP_PROBEREQRECVED, function(T)
 
-    if (T.MAC == "1c:56:fe:a0:68:a8") then
+    --if (T.MAC == "1c:56:fe:a0:68:a8") then
 
         print("\n\tAP_PROBEREQRECVED" .. "\n\t\tMAC: " .. T.MAC .. "\n\t\tRSSI: " .. T.RSSI)
 
@@ -228,7 +228,7 @@ wifi.eventmon.register(wifi.eventmon.AP_PROBEREQRECVED, function(T)
 
         MEASUREMENT.time = tmr.time()
 
-        MEASUREMENT.rfid = wifi.sta.getmac()
+        MEASUREMENT.rfid = wifi.ap.getmac()
 
         MEASUREMENT.apid = T.MAC
 
@@ -236,7 +236,7 @@ wifi.eventmon.register(wifi.eventmon.AP_PROBEREQRECVED, function(T)
 
         MEASUREMENTS.data[#MEASUREMENTS.data + 1] = MEASUREMENT
 
-    end
+    --end
 
 end)
 

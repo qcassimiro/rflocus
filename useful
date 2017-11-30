@@ -13,5 +13,12 @@ curl -H "Content-Type: application/json" -X PUT -d '{"type": "ctrl", "data": [{"
 
 curl -H "Content-Type: application/json" -X PUT -d '{"type": "real", "data": [{"apid": "B", "rssi": -50, "posx": 3, "posy": 2, "posz": 1, "time": 300}, {"apid": "B", "rssi": -50, "posx": 3, "posy": 2, "posz": 1, "time": 300}, {"apid": "B", "rssi": -50, "posx": 3, "posy": 2, "posz": 1, "time": 300}, {"apid": "B", "rssi": -50, "posx": 3, "posy": 2, "posz": 1, "time": 300}]}' http://127.0.0.1:5500/
 
-curl -X GET http://127.0.0.1:5500/?6a:39:a3:67:51:8e=3.0&df:11:bb:8f:a8:7a=6.4&19:b3:82:86:06:6e=8.5&c7:45:50:51:06:d1=6.4
+curl -X GET http://127.0.0.1:5500/?a2:20:a6:14:ea:ec=3.00&a2:20:a6:17:37:d8=6.00&a2:20:a6:19:10:45=8.00
+
+
+
+
+
+http://127.0.0.1:5500/?a2:20:a6:14:ea:ec=-80&a2:20:a6:17:37:d8=-67&a2:20:a6:19:10:45=-42
+esperado: +- 37, 15, 1
 

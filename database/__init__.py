@@ -10,7 +10,7 @@ SCHEMA = "database/schema.sql"
 STDATA = "database/stdata.sql"
 
 ACCESS_POINTS_RANGE = range(4, 8)
-AREAS_RANGE = range(2, 8)
+AREAS_RANGE = range(2, 16)
 
 
 class RFLDatabase():
@@ -58,6 +58,15 @@ class RFLDatabase():
 
     def get_references(self, apids):
         query = "SELECT * FROM `apxyz` WHERE `apid` IN " + str(tuple(apids)) + ";"
+        self.cursor.execute(query)
+        result = self.cursor.fetchall()
+        return result
+
+    ############################################################################
+    def get_similar(self, apid, rssi, rssi_tol):
+        ssmin = str(rssi + rssi_tol)
+        ssmax = str(rssi - rssi_tol)
+        query = "SELECT `posx`, `posy`, `posz` FROM `real` WHERE `apid` = '" + apid + "' AND `rssi` BETWEEN " + ssmin + " AND " + ssmax + ";"
         self.cursor.execute(query)
         result = self.cursor.fetchall()
         return result
