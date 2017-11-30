@@ -76,6 +76,8 @@ wifi.sta.config(STA_CFG)
 
 wifi.setmode(wifi.STATIONAP)
 
+wifi.setphymode(wifi.PHYMODE_B)
+
 ----------------------------------------------------------------
 
 MEASUREMENTS = {}
@@ -218,19 +220,23 @@ wifi.eventmon.unregister(wifi.eventmon.AP_PROBEREQRECVED)
 
 wifi.eventmon.register(wifi.eventmon.AP_PROBEREQRECVED, function(T)
 
-    print("\n\tAP_PROBEREQRECVED" .. "\n\t\tMAC: " .. T.MAC .. "\n\t\tRSSI: " .. T.RSSI)
+    if (T.MAC == "1c:56:fe:a0:68:a8") then
 
-    MEASUREMENT = {}
+        print("\n\tAP_PROBEREQRECVED" .. "\n\t\tMAC: " .. T.MAC .. "\n\t\tRSSI: " .. T.RSSI)
 
-    MEASUREMENT.time = tmr.time()
+        MEASUREMENT = {}
 
-    MEASUREMENT.rfid = wifi.sta.getmac()
+        MEASUREMENT.time = tmr.time()
 
-    MEASUREMENT.apid = T.MAC
+        MEASUREMENT.rfid = wifi.sta.getmac()
 
-    MEASUREMENT.rssi = T.RSSI
+        MEASUREMENT.apid = T.MAC
 
-    MEASUREMENTS.data[#MEASUREMENTS.data + 1] = MEASUREMENT
+        MEASUREMENT.rssi = T.RSSI
+
+        MEASUREMENTS.data[#MEASUREMENTS.data + 1] = MEASUREMENT
+
+    end
 
 end)
 

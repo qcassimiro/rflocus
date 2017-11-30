@@ -29,7 +29,19 @@ class RFLResource(flask_restful.Resource):
             return {}
         access_points = {}
         for k, v in args.items():
-            # estimate distance for rssi of v
+            # para cada (mac, rssi):
+            # faz um range toleravel em torno de rssi - 5-10%
+            # sigst = float(v[0]) #
+            # D = sigst * 0.1 #
+            # selecionar todas as coordenadas em 'real' onde rssi_b esta no range
+            # SELECT posx, posy, posz, rssi from real WHERE rssi BETWEEN sigst - D AND sigst + D #
+            # para cada coordenada selecionada calcular uma distancia ate o ap
+            # for result in results:
+            #     dist = euclidean(result, posap)
+            # para cada distancia montar tupla (distancia, rssi, rssi_b)
+            # fazer uma media ponderada das distancias nas tuplas, com base em rssi - rssi_b
+            # retornar distancia
+            # colocar todas as distancias retornadas em access_points[k]
             access_points[k] = float(v[0]) * 1.0
         results = self.database.get_references(access_points.keys())
         references = []

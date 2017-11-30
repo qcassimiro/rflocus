@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS `real`
+(
+    `reid` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+    `apid` TEXT    NOT NULL,
+    `rssi` INTEGER NOT NULL,
+    `posx` INTEGER NOT NULL,
+    `posy` INTEGER NOT NULL,
+    `posz` INTEGER NOT NULL,
+    `time` TEXT    NOT NULL
+);
