@@ -40,15 +40,7 @@ STA_CFG = {}
 
 STA_CFG.ssid = "RFLocus"
 
---STA_CFG.ssid = "Natalia"
-
---STA_CFG.ssid = "Net-Virtua-7245"
-
 STA_CFG.pwd = "oficina3"
-
---STA_CFG.pwd = "outubro10"
-
---STA_CFG.pwd = "6305372450"
 
 STA_CFG.bssid = "B8-27-EB-A3-7D-75"
 
